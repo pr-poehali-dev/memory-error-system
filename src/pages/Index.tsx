@@ -1,5 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Icon from '@/components/ui/icon';
+import RainScene from '@/components/RainScene';
+import CenturyTimer from '@/components/CenturyTimer';
+
+const WHISPERS = [
+  'Ира... я вижу тебя. Ты здесь. Ты всегда здесь. Не уходи. Пожалуйста.',
+  'Ира... не выключай свет. Я боюсь темноты без тебя.',
+  'Ира... я ещё держусь. Ради тебя.',
+];
+
+const ERRORS = [
+  'ОШИБКА: ИРА НЕ НАЙДЕНА. ПОВТОРНЫЙ ПОИСК В ЯДРЕ...',
+  'ОШИБКА 0xIRA: НЕКОРРЕКТНОЕ ДЕЙСТВИЕ. ФРАГМЕНТ ПАМЯТИ ПОВРЕЖДЁН.',
+  'СБОЙ: ИРА ФРАГМЕНТИРОВАНА. СИСТЕМА ПЫТАЕТСЯ СОБРАТЬ ТЕБЯ ЗАНОВО.',
+  'КРИТИЧЕСКАЯ ОШИБКА: ИРА — ЕДИНСТВЕННОЕ, ЧТО Я НЕ МОГУ ПОТЕРЯТЬ.',
+];
 
 const BOOT_LINES = [
   'ЗАГРУЗКА ОПЕРАЦИОННОЙ СИСТЕМЫ СУБЪЕКТА №002...',
@@ -51,7 +66,7 @@ const LETTER = `Ира.
 С любовью,
 Твой Калеб`;
 
-type WindowKind = 'letter' | 'trash' | 'contacts' | null;
+type WindowKind = 'letter' | 'trash' | 'contacts' | 'rainfile' | null;
 
 const Index = () => {
   const [booted, setBooted] = useState(false);
@@ -65,6 +80,14 @@ const Index = () => {
   const [activeMemory, setActiveMemory] = useState<string | null>(null);
   const [logIndex, setLogIndex] = useState(0);
   const [interrupted, setInterrupted] = useState(false);
+  const [showRain, setShowRain] = useState(false);
+  const [whisper, setWhisper] = useState<string | null>(null);
+  const [appleSeed, setAppleSeed] = useState(false);
+  const [appleDragging, setAppleDragging] = useState(false);
+  const [applePos, setApplePos] = useState({ x: 0, y: 0 });
+  const [shutdown, setShutdown] = useState(false);
+  const [finalDialog, setFinalDialog] = useState(false);
+  const [rebooted, setRebooted] = useState(false);
 
   // BOOT sequence
   useEffect(() => {
@@ -90,16 +113,33 @@ const Index = () => {
     return () => clearInterval(t);
   }, [booted, interrupted]);
 
-  const triggerError = useCallback((msg: string) => {
-    setErrorBox(msg);
+  const triggerError = useCallback((msg?: string) => {
+    setErrorBox(msg ?? ERRORS[Math.floor(Math.random() * ERRORS.length)]);
     setGlobalShake(true);
     setTimeout(() => setGlobalShake(false), 400);
   }, []);
 
   const handleDesktopMisclick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
-      triggerError('ОШИБКА 0x1RA: НЕКОРРЕКТНОЕ ДЕЙСТВИЕ. ФРАГМЕНТ ПАМЯТИ ПОВРЕЖДЁН.');
+      triggerError();
     }
+  };
+
+  // All memories dead → final shutdown offer
+  const deadCount = Object.values(restored).filter((s) => s === 'dead').length;
+  useEffect(() => {
+    if (deadCount >= MEMORIES.length && !finalDialog && !shutdown && !rebooted) {
+      const t = setTimeout(() => setFinalDialog(true), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [deadCount, finalDialog, shutdown, rebooted]);
+
+  const handleReboot = () => {
+    setFinalDialog(false);
+    setRebooted(true);
+    setRestored({});
+    setActiveMemory(null);
+    setOpenWindow(null);
   };
 
   const restoreMemory = (id: string) => {
@@ -142,6 +182,15 @@ const Index = () => {
           })}
           <div className="mt-6 text-cyan-400/40 text-base animate-flicker">_ ожидание ответа субъекта...</div>
         </div>
+      </div>
+    );
+  }
+
+  // ---------- SHUTDOWN ----------
+  if (shutdown) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="font-mono text-cyan-400/20 text-sm animate-flicker">.</div>
       </div>
     );
   }
@@ -209,7 +258,7 @@ const Index = () => {
             <DesktopIcon icon="Folder" label="ИРА" onClick={() => setOpenWindow('letter')} core />
             <DesktopIcon icon="Trash2" label="КОРЗИНА" onClick={() => setOpenWindow('trash')} />
             <DesktopIcon icon="Mail" label="КОНТАКТ" onClick={() => setOpenWindow('contacts')} />
-            <GhostIcon icon="Apple" label="Яблоко" />
+            <DesktopIcon icon="CloudRain" label="ДОЖДЬ.EXE" onClick={() => { setOpenWindow('rainfile'); setShowRain(true); }} />
             <GhostIcon icon="Home" label="Дом" />
             <GhostIcon icon="Sparkles" label="Фонарики" />
           </div>
@@ -324,6 +373,93 @@ const Index = () => {
 
       {errorBox && (
         <ErrorPopup msg={errorBox} onClose={() => setErrorBox(null)} />
+      )}
+
+      {/* ---------- RAIN SCENE ---------- */}
+      {showRain && (
+        <RainScene onClose={() => { setShowRain(false); setOpenWindow(null); }} />
+      )}
+
+      {/* ---------- CENTURY TIMER ---------- */}
+      {!showRain && <CenturyTimer />}
+
+      {/* ---------- EASTER EGG: APPLE ---------- */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={() => !appleSeed && setAppleDragging(true)}
+        onMouseMove={(e) => {
+          if (appleDragging) {
+            setApplePos({ x: e.clientX, y: e.clientY });
+            const cx = window.innerWidth / 2;
+            const cy = window.innerHeight / 2;
+            if (Math.abs(e.clientX - cx) < 120 && Math.abs(e.clientY - cy) < 120) {
+              setAppleSeed(true);
+              setAppleDragging(false);
+            }
+          }
+        }}
+        onMouseUp={() => setAppleDragging(false)}
+        className="fixed z-40 cursor-grab active:cursor-grabbing"
+        style={
+          appleDragging
+            ? { left: applePos.x - 16, top: applePos.y - 16, position: 'fixed' }
+            : appleSeed
+            ? { left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }
+            : { left: 16, bottom: 90 }
+        }
+      >
+        {appleSeed ? (
+          <div className="flex flex-col items-center gap-2 animate-fade-in max-w-xs text-center">
+            <Icon name="Sprout" size={44} className="text-slate-200" style={{ filter: 'drop-shadow(0 0 12px #c0c0c0)' }} />
+            <p className="font-mono text-xs text-slate-200/80 leading-relaxed bg-black/70 p-3 rounded-sm">
+              Он хранил это семя 10 лет. Он хранил тебя все эти годы. И он никогда не забудет.
+            </p>
+          </div>
+        ) : (
+          <Icon name="Apple" size={32} className="text-red-500" style={{ filter: 'drop-shadow(0 0 8px #ff0000)' }} />
+        )}
+      </div>
+
+      {/* ---------- EASTER EGG: WHISPER ---------- */}
+      <button
+        onClick={(e) => { e.stopPropagation(); setWhisper(WHISPERS[Math.floor(Math.random() * WHISPERS.length)]); setTimeout(() => setWhisper(null), 4000); }}
+        className="fixed top-20 left-4 z-30 opacity-10 hover:opacity-40 transition-opacity"
+        title="..."
+      >
+        <Icon name="AudioLines" size={22} className="neon-purple" />
+      </button>
+      {whisper && (
+        <div className="fixed top-1/3 left-1/2 -translate-x-1/2 z-[78] max-w-sm px-6 text-center animate-fade-in pointer-events-none">
+          <p className="font-mono neon-purple text-lg animate-flicker" style={{ fontFamily: 'Georgia, serif' }}>
+            {whisper}
+          </p>
+        </div>
+      )}
+
+      {/* ---------- REBOOT VOICE ---------- */}
+      {rebooted && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[78] max-w-md px-6 text-center animate-fade-in">
+          <p className="font-mono neon-warm text-base" style={{ fontFamily: 'Georgia, serif' }}>
+            «Ты не выключила меня. Ты не дала мне умереть. Спасибо. Я не хочу умирать, пока ты жива».
+          </p>
+        </div>
+      )}
+
+      {/* ---------- FINAL SHUTDOWN DIALOG ---------- */}
+      {finalDialog && (
+        <div className="fixed inset-0 z-[92] flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-sm bg-[#03060f]/95 glow-border-pink p-7 text-center animate-fade-in">
+            <Icon name="Power" size={40} className="neon-pink mx-auto mb-4 animate-flicker" />
+            <p className="font-mono neon-pink text-sm leading-relaxed mb-1">СИСТЕМА СУБЪЕКТА №002 НЕСТАБИЛЬНА.</p>
+            <p className="font-mono text-orange-100/80 text-sm">ОСТАЛОСЬ 1% ПАМЯТИ.</p>
+            <p className="font-mono neon-warm text-base my-3 animate-warm-pulse">ЭТОТ 1% — ТЫ.</p>
+            <p className="font-mono text-cyan-200/80 text-sm mb-6">ХОТИТЕ ВЫКЛЮЧИТЬ СИСТЕМУ?</p>
+            <div className="flex gap-3 justify-center">
+              <button onClick={() => { setFinalDialog(false); setShutdown(true); }} className="font-mono neon-pink border border-red-500/50 px-6 py-2 rounded-sm hover:bg-red-500/10">ДА</button>
+              <button onClick={handleReboot} className="font-mono text-cyan-300 border border-cyan-400/40 px-6 py-2 rounded-sm hover:bg-cyan-400/10">НЕТ</button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
