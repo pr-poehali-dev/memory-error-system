@@ -97,5 +97,88 @@
 
   body {
     @apply bg-background text-foreground;
+    background-color: #02030a;
+    cursor: crosshair;
   }
+}
+
+@layer utilities {
+  .neon-cyan {
+    color: #00fff9;
+    text-shadow:
+      0 0 6px #00fff9,
+      0 0 16px rgba(0, 255, 249, 0.5);
+  }
+  .neon-pink {
+    color: #ff003c;
+    text-shadow:
+      0 0 6px #ff003c,
+      0 0 16px rgba(255, 0, 60, 0.5);
+  }
+  .neon-warm {
+    color: #ffd27f;
+    text-shadow:
+      0 0 8px #ffb347,
+      0 0 20px #ff8c00;
+  }
+  .neon-purple {
+    color: #b14aff;
+    text-shadow:
+      0 0 6px #b14aff,
+      0 0 16px rgba(177, 74, 255, 0.5);
+  }
+
+  .crt::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 60;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0) 0px,
+      rgba(0, 0, 0, 0) 2px,
+      rgba(0, 0, 0, 0.18) 3px,
+      rgba(0, 0, 0, 0) 4px
+    );
+  }
+  .crt::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 61;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(0, 0, 0, 0) 55%,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+  }
+
+  .glow-border-cyan {
+    box-shadow:
+      0 0 0 1px rgba(0, 255, 249, 0.4),
+      0 0 20px rgba(0, 255, 249, 0.15) inset;
+  }
+  .glow-border-warm {
+    box-shadow:
+      0 0 0 1px rgba(255, 179, 71, 0.4),
+      0 0 24px rgba(255, 140, 0, 0.12) inset;
+  }
+  .glow-border-pink {
+    box-shadow:
+      0 0 0 1px rgba(255, 0, 60, 0.5),
+      0 0 24px rgba(255, 0, 60, 0.18) inset;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #05060f;
+}
+::-webkit-scrollbar-thumb {
+  background: #00fff955;
+  border-radius: 4px;
 }
