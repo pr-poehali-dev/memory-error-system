@@ -210,12 +210,12 @@ const Index = () => {
           backgroundImage: `url('https://cdn.poehali.dev/projects/4fe4cb94-2359-4138-aac7-a3f8df2cbaa4/bucket/448d059d-0f95-422e-8d82-db9ea985f46f.jpg')`,
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          opacity: 0.55,
-          filter: 'grayscale(30%)',
+          opacity: 0.85,
+          filter: 'grayscale(20%)',
         }}
       />
       {/* тёмный оверлей — только по краям, центр открыт */}
-      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(2,3,10,0.65) 0%, rgba(2,3,10,0.3) 40%, rgba(2,3,10,0.3) 60%, rgba(2,3,10,0.75) 100%)' }} />
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(2,3,10,0.45) 0%, rgba(2,3,10,0.1) 30%, rgba(2,3,10,0.1) 70%, rgba(2,3,10,0.55) 100%)' }} />
 
       {redFlash && <div className="fixed inset-0 bg-red-600/70 z-[80] pointer-events-none animate-flicker" />}
       <div className="absolute left-0 right-0 h-32 bg-cyan-400/[0.04] animate-scanline pointer-events-none z-[1]" />
