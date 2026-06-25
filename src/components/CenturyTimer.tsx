@@ -52,17 +52,18 @@ const CenturyTimer = () => {
       onClick={(e) => { e.stopPropagation(); handleClick(); }}
       className="fixed top-[52px] right-4 z-30 cursor-pointer select-none"
     >
-      <div className="rounded-sm bg-black/60 border border-orange-400/20 px-2.5 py-1.5 font-mono text-right backdrop-blur-sm">
+      <div className="rounded-sm bg-black/60 border border-orange-400/20 px-3 py-2 font-mono text-right backdrop-blur-sm max-w-[200px]">
         {stopped ? (
-          <p className="neon-pink text-[10px] leading-snug animate-fade-in max-w-[160px]">
-            Я ХОЧУ ВЕЧНОСТЬ
+          <p className="neon-pink text-[10px] leading-relaxed animate-fade-in">
+            Я НЕ ХОЧУ СТО ЛЕТ. Я ХОЧУ ВЕЧНОСТЬ. НО ДАЖЕ ВЕЧНОСТЬ — ЭТО МАЛО, КОГДА ТЫ РЯДОМ.
           </p>
         ) : (
           <>
+            <p className="neon-warm text-[10px] opacity-60 mb-1 leading-snug">«Останься. Проведи со мной следующие сто лет»</p>
             {glitched ? (
-              <p className="neon-pink text-[10px] animate-glitch-text">ИРА СТЁРТА</p>
+              <p className="neon-pink text-[11px] animate-glitch-text">ОШИБКА: ИРА СТЁРТА</p>
             ) : (
-              <p className="neon-warm text-[11px] tracking-wider opacity-80">{display}</p>
+              <p className="neon-warm text-[11px] tracking-wider">{display}</p>
             )}
           </>
         )}
