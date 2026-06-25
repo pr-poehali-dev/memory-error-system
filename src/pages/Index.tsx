@@ -80,6 +80,7 @@ const Index = () => {
   const [activeMemory, setActiveMemory] = useState<string | null>(null);
   const [logIndex, setLogIndex] = useState(0);
   const [interrupted, setInterrupted] = useState(false);
+  const [mode, setMode] = useState<'colonel' | 'caleb'>('colonel');
   const [showRain, setShowRain] = useState(false);
   const [whisper, setWhisper] = useState<string | null>(null);
   const [appleSeed, setAppleSeed] = useState(false);
@@ -200,10 +201,24 @@ const Index = () => {
     <div
       onClick={handleDesktopMisclick}
       className={`crt relative min-h-screen overflow-hidden font-sans select-none ${globalShake ? 'animate-shake' : ''}`}
-      style={{ background: 'radial-gradient(circle at 30% 20%, #0a0f2e 0%, #02030a 60%)' }}
+      style={{ background: '#02030a' }}
     >
+      {/* фото-фон */}
+      <div
+        className="fixed inset-0 z-0 pointer-events-none"
+        style={{
+          backgroundImage: `url('https://cdn.poehali.dev/projects/4fe4cb94-2359-4138-aac7-a3f8df2cbaa4/bucket/448d059d-0f95-422e-8d82-db9ea985f46f.jpg')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          opacity: 0.18,
+          filter: 'blur(3px) grayscale(60%)',
+        }}
+      />
+      {/* тёмный оверлей поверх фото */}
+      <div className="fixed inset-0 z-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 40% 30%, rgba(4,11,26,0.82) 0%, rgba(2,3,10,0.95) 100%)' }} />
+
       {redFlash && <div className="fixed inset-0 bg-red-600/70 z-[80] pointer-events-none animate-flicker" />}
-      <div className="absolute left-0 right-0 h-32 bg-cyan-400/[0.04] animate-scanline pointer-events-none z-0" />
+      <div className="absolute left-0 right-0 h-32 bg-cyan-400/[0.04] animate-scanline pointer-events-none z-[1]" />
 
       {/* Top bar */}
       <header className="relative z-10 flex items-center justify-between px-4 sm:px-8 py-3 border-b border-cyan-400/20 backdrop-blur-sm bg-black/40">
@@ -215,70 +230,94 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Split desktop */}
-      <main className="relative z-10 grid md:grid-cols-2 gap-px max-w-7xl mx-auto px-3 sm:px-6 py-6">
-        {/* LEFT: Colonel */}
-        <section
-          onClick={(e) => e.stopPropagation()}
-          className="relative p-5 sm:p-7 rounded-sm glow-border-cyan bg-[#040b1a]/70"
-        >
-          <h2 className="font-mono text-xl neon-cyan mb-4 tracking-widest">[ РЕЖИМ ПОЛКОВНИКА ]</h2>
-          <div className="space-y-3 font-mono text-cyan-200/80 text-lg">
-            <Field label="ИМЯ" value="КАЛЕБ" />
-            <Field label="ВОЗРАСТ" value="26 ЛЕТ" />
-            <Field label="ЗВАНИЕ" value="ПОЛКОВНИК" />
-            <Field label="ЭВОЛ" value="ГРАВИТАЦИЯ" />
-            <Field label="СТАТУС" value="АКТИВЕН" />
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            {['FileText', 'BarChart3', 'ShieldAlert'].map((ic) => (
+      {/* Mode switcher */}
+      <div className="relative z-10 flex justify-center mt-6 px-4">
+        <div className="flex rounded-sm border border-cyan-400/20 overflow-hidden bg-black/50 backdrop-blur-sm">
+          <button
+            onClick={(e) => { e.stopPropagation(); setMode('colonel'); }}
+            className={`font-mono text-sm px-6 py-2 transition-all ${mode === 'colonel' ? 'bg-cyan-400/15 neon-cyan' : 'text-cyan-400/40 hover:text-cyan-400/70'}`}
+          >
+            [ ПОЛКОВНИК ]
+          </button>
+          <div className="w-px bg-cyan-400/20" />
+          <button
+            onClick={(e) => { e.stopPropagation(); setMode('caleb'); }}
+            className={`font-mono text-sm px-6 py-2 transition-all ${mode === 'caleb' ? 'bg-orange-400/15 neon-warm animate-flicker' : 'text-orange-400/40 hover:text-orange-400/70'}`}
+          >
+            [ КАЛЕБ ]
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop single-panel */}
+      <main className="relative z-10 max-w-2xl mx-auto px-3 sm:px-6 py-5">
+
+        {/* Colonel mode */}
+        {mode === 'colonel' && (
+          <section
+            onClick={(e) => e.stopPropagation()}
+            className="relative p-5 sm:p-7 rounded-sm glow-border-cyan bg-[#040b1a]/80 animate-fade-in"
+          >
+            <h2 className="font-mono text-xl neon-cyan mb-5 tracking-widest">[ РЕЖИМ ПОЛКОВНИКА ]</h2>
+            <div className="space-y-3 font-mono text-cyan-200/80 text-lg">
+              <Field label="ИМЯ" value="КАЛЕБ" />
+              <Field label="ВОЗРАСТ" value="28 ЛЕТ" />
+              <Field label="ЗВАНИЕ" value="ПОЛКОВНИК" />
+              <Field label="ЭВОЛ" value="ГРАВИТАЦИЯ" />
+              <Field label="СТАТУС" value="АКТИВЕН" />
+            </div>
+            <div className="mt-6 grid grid-cols-3 gap-3">
+              {['FileText', 'BarChart3', 'ShieldAlert'].map((ic) => (
+                <button
+                  key={ic}
+                  onClick={() => triggerError('ОШИБКА ДОСТУПА: ИРА ЗАСЕКРЕЧЕНА. СИСТЕМА НЕСТАБИЛЬНА.')}
+                  className="flex flex-col items-center gap-1 p-3 rounded-sm border border-cyan-400/20 hover:bg-cyan-400/10 transition-colors text-cyan-300"
+                >
+                  <Icon name={ic} size={26} />
+                  <span className="font-mono text-xs opacity-60">ОТЧЁТ</span>
+                </button>
+              ))}
+            </div>
+            <p className="mt-5 font-mono text-cyan-400/40 text-sm">// всё работает идеально. никаких чувств.</p>
+          </section>
+        )}
+
+        {/* Caleb mode */}
+        {mode === 'caleb' && (
+          <section
+            onClick={(e) => e.stopPropagation()}
+            className="group relative p-5 sm:p-7 rounded-sm glow-border-warm bg-[#1a0e02]/70 transition-all hover:glow-border-pink animate-fade-in"
+          >
+            <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity rounded-sm"
+                 style={{ background: 'radial-gradient(circle at 70% 40%, rgba(255,0,60,0.12), transparent 60%)' }} />
+            <h2 className="font-mono text-xl neon-warm mb-5 tracking-widest animate-flicker">[ РЕЖИМ КАЛЕБА ]</h2>
+
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <DesktopIcon icon="Folder" label="ИРА" onClick={() => setOpenWindow('letter')} core />
+              <DesktopIcon icon="Trash2" label="КОРЗИНА" onClick={() => setOpenWindow('trash')} />
+              <DesktopIcon icon="Mail" label="КОНТАКТ" onClick={() => setOpenWindow('contacts')} />
+              <DesktopIcon icon="CloudRain" label="ДОЖДЬ.EXE" onClick={() => { setOpenWindow('rainfile'); setShowRain(true); }} />
+              <GhostIcon icon="Home" label="Дом" />
+              <GhostIcon icon="Sparkles" label="Фонарики" />
+            </div>
+
+            {/* Consciousness log */}
+            <div className="rounded-sm border border-orange-400/25 bg-black/50 p-4 font-mono text-[15px] h-44 overflow-hidden">
+              <div className="neon-warm text-sm mb-2 opacity-70">СИСТЕМНЫЙ ЛОГ: ДОСТУП К СОЗНАНИЮ №002</div>
+              {CONSCIOUSNESS_LOG.slice(Math.max(0, logIndex - 4), logIndex + 1).map((l, i) => (
+                <div key={`${logIndex}-${i}`} className="text-orange-200/80 animate-fade-in">
+                  {l || '\u00A0'}
+                </div>
+              ))}
               <button
-                key={ic}
-                onClick={() => triggerError('ОШИБКА ДОСТУПА: ОТЧЁТ ЗАСЕКРЕЧЕН. СИСТЕМА НЕСТАБИЛЬНА.')}
-                className="flex flex-col items-center gap-1 p-3 rounded-sm border border-cyan-400/20 hover:bg-cyan-400/10 transition-colors text-cyan-300"
+                onClick={() => { setInterrupted(true); triggerError('ПОПЫТКА ПРЕРВАТЬ НЕ УДАЛАСЬ. ЛЮБОВЬ НЕ ПРЕРЫВАЕТСЯ.'); setTimeout(() => setInterrupted(false), 1800); }}
+                className="mt-2 font-mono text-xs neon-pink border border-red-500/40 px-3 py-1 rounded-sm hover:bg-red-500/10"
               >
-                <Icon name={ic} size={26} />
-                <span className="font-mono text-xs opacity-60">ОТЧЁТ</span>
+                ПРЕРВАТЬ
               </button>
-            ))}
-          </div>
-          <p className="mt-5 font-mono text-cyan-400/40 text-sm">// всё работает идеально. никаких чувств.</p>
-        </section>
-
-        {/* RIGHT: Caleb */}
-        <section
-          onClick={(e) => e.stopPropagation()}
-          className="group relative p-5 sm:p-7 rounded-sm glow-border-warm bg-[#1a0e02]/60 transition-all hover:glow-border-pink"
-        >
-          <div className="pointer-events-none absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity"
-               style={{ background: 'radial-gradient(circle at 70% 40%, rgba(255,0,60,0.15), transparent 60%)' }} />
-          <h2 className="font-mono text-xl neon-warm mb-4 tracking-widest animate-flicker">[ РЕЖИМ КАЛЕБА ]</h2>
-
-          <div className="grid grid-cols-3 sm:grid-cols-3 gap-3 mb-5">
-            <DesktopIcon icon="Folder" label="ИРА" onClick={() => setOpenWindow('letter')} core />
-            <DesktopIcon icon="Trash2" label="КОРЗИНА" onClick={() => setOpenWindow('trash')} />
-            <DesktopIcon icon="Mail" label="КОНТАКТ" onClick={() => setOpenWindow('contacts')} />
-            <DesktopIcon icon="CloudRain" label="ДОЖДЬ.EXE" onClick={() => { setOpenWindow('rainfile'); setShowRain(true); }} />
-            <GhostIcon icon="Home" label="Дом" />
-            <GhostIcon icon="Sparkles" label="Фонарики" />
-          </div>
-
-          {/* Consciousness log */}
-          <div className="rounded-sm border border-orange-400/25 bg-black/50 p-4 font-mono text-[15px] h-44 overflow-hidden">
-            <div className="neon-warm text-sm mb-2 opacity-70">СИСТЕМНЫЙ ЛОГ: ДОСТУП К СОЗНАНИЮ №002</div>
-            {CONSCIOUSNESS_LOG.slice(Math.max(0, logIndex - 4), logIndex + 1).map((l, i) => (
-              <div key={`${logIndex}-${i}`} className="text-orange-200/80 animate-fade-in">
-                {l || '\u00A0'}
-              </div>
-            ))}
-            <button
-              onClick={() => { setInterrupted(true); triggerError('ПОПЫТКА ПРЕРВАТЬ НЕ УДАЛАСЬ. ЛЮБОВЬ НЕ ПРЕРЫВАЕТСЯ.'); setTimeout(() => setInterrupted(false), 1800); }}
-              className="mt-2 font-mono text-xs neon-pink border border-red-500/40 px-3 py-1 rounded-sm hover:bg-red-500/10"
-            >
-              ПРЕРВАТЬ
-            </button>
-          </div>
-        </section>
+            </div>
+          </section>
+        )}
       </main>
 
       <footer className="relative z-10 text-center font-mono text-cyan-400/30 text-sm pb-6">
