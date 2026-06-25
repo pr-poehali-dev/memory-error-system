@@ -50,7 +50,7 @@ const CenturyTimer = () => {
   return (
     <div
       onClick={(e) => { e.stopPropagation(); handleClick(); }}
-      className="fixed bottom-4 right-4 z-30 cursor-pointer select-none"
+      className="fixed top-[52px] right-4 z-30 cursor-pointer select-none"
     >
       <div className="rounded-sm bg-black/70 glow-border-warm px-4 py-3 font-mono text-right backdrop-blur-sm max-w-[240px]">
         {stopped ? (
